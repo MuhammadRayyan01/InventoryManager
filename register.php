@@ -10,12 +10,14 @@ require_once 'db.php';
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     // 1. Capture and sanitize inputs
     $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     // 2. Basic validation
-    if (empty($username) || empty($password)) {
+    if (empty($username) || empty($email) || empty($password)) {
         $error_message = "Please fill in all fields.";
     } else {
         try {
@@ -32,11 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
                 // 5. Insert the new user into the database
-                $insertSql = "INSERT INTO users (username, password) VALUES (:username, :password)";
+                $insertSql = "INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)";
                 $insertStmt = $pdo->prepare($insertSql);
                 $insertStmt->execute([
                     ':username' => $username,
-                    ':password' => $hashed_password
+                    ':email' => $email,
+                    ':password_hash' => $hashed_password
                 ]);
 
                 // 6. Redirect to login page on success
@@ -98,6 +101,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="text" class="form-control" id="username" name="username" 
                                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" 
                                        required autofocus>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" 
+                                       required>
                             </div>
 
                             <div class="mb-4">

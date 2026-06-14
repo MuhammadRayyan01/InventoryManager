@@ -21,15 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Please enter both username and password.";
     } else {
         // Fetch the user record by username
-        $sql = "SELECT id, username, password FROM users WHERE username = :username";
-        
+$sql = "SELECT id, username, password_hash FROM users WHERE username = :username LIMIT 1";        
         try {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([':username' => $username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             // Verify the user exists AND the password matches the hash
-            if ($user && password_verify($password, $user['password'])) {
+            if ($user && password_verify($password, $user['password_hash'])) {
                 
                 // Security measure: Regenerate session ID to prevent hijacking
                 session_regenerate_id(true);
