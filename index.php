@@ -1,9 +1,5 @@
 <?php
 session_start();
-
-// ==========================================
-// Hard stop: validate session for multi-tenant isolation
-// ==========================================
 if (empty($_SESSION['user_id']) || !is_numeric($_SESSION['user_id'])) {
     http_response_code(403);
     die('CRITICAL ERROR: Unauthorized access. Session is invalid.');
@@ -12,10 +8,6 @@ if (empty($_SESSION['user_id']) || !is_numeric($_SESSION['user_id'])) {
 $active_user_id = (int) $_SESSION['user_id'];
 
 require_once 'db.php';
-
-// ------------------------------
-// Aggregate statistics for dashboard (tenant-filtered)
-// ------------------------------
 try {
     // STAT 1: Total Suppliers (tenant only)
     $stmt = $pdo->prepare("SELECT COUNT(*) AS total_suppliers FROM Suppliers WHERE user_id = :user_id");
@@ -30,9 +22,7 @@ try {
     // STAT 3: Total Stock (tenant only)
     // Filter tenant via Products.user_id to guarantee stock isolation.
     $stockSql = "
-        SELECT
-            COALESCE(SUM(
-                CASE
+        SELECT COALESCE(SUM(CASE
                     WHEN t.transaction_type = 'IN' THEN t.quantity
                     WHEN t.transaction_type = 'OUT' THEN -t.quantity
                     ELSE t.quantity
